@@ -76,10 +76,10 @@ Raul P. Pelaez 2018.
   Besides HydroGrid output, this code will output the particle positions every savefreq with the following format:  
   ```
   ----  
-  #time1  
+  #(time1) (total number of Monte Carlo steps since last frame)  (current acceptance rate)
   x y z radius color  
   ...  
-  #time2  
+  #(time2) (total number of Monte Carlo steps since last frame)  (current acceptance rate) 
   ...  
   ----  
   ```

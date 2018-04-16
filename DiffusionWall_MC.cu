@@ -363,11 +363,15 @@ int main(int argc, char *argv[]){
   forj(0,par.thermSteps){mc->forwardTime();}
   
   tim.tic();
+  
+  //Reset tries count
+  mc->getMonteCarloSteps();
   //Run the simulation
   forj(0,numsteps){
     //This will instruct the integrator to take the simulation to the next time step,
     //For the MCMC module this means doing a certain number of trials[2].
-    mc->forwardTime();
+    //With true flag the total number of tries and the total number of accepted tries are stored.
+    mc->forwardTime(true);
 
     //update HG
     if(samplefreqHydroGrid>0 && j%samplefreqHydroGrid==0) {hg.update(j);} 
@@ -385,7 +389,11 @@ int main(int argc, char *argv[]){
       //This allows to always recover the original order of the particles.
       const int * sortedIndex = pd->getIdOrderedIndices(access::location::cpu);
       
-      out<<"#\n";
+      //This get the number of the total number of tries (MCtries.x),
+      //and how many of them have been accepted (MCtries.y).
+      uint2 MCtries = mc->getMonteCarloSteps();
+      
+      out<<"# "<<j<<" "<<MCtries.x<<" "<<real(MCtries.y)/MCtries.x<<endl;
       real3 p;
       fori(0, numberofparticles){
 	real4 pc = pos.raw()[sortedIndex[i]];
