@@ -1,4 +1,5 @@
-/*Raul P. Pelaez 2018. 
+/*Pablo Ibañez and Raul P. Pelaez 2018.
+
   An UAMMD[1] Monte Carlo simulation of Debye type blobs confined near a wall with a Debye repulsion.
   It uses the MonteCarloNVT_Anderson module by Pablo Ibañez[2].
 
