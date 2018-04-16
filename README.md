@@ -9,6 +9,9 @@ Raul P. Pelaez 2018.
   
   ### HOW TO COMPILE DiffusionWall_MC.cu  
   
+  Try to compile by just using "make", it will give you if something is missing.  
+  
+  If you want to manually compile:  
   Compile with nvcc, you need to tell it where UAMMD and HydroGrid[3] are (HydroGrid has to be compiled already) and the flag --expt-relaxed-constexpr is necessary.  
   You will need to link HydroGrid in some way. I usually pass -lCallHydroGrid and then copy libCallHydroGrid.so to the same folder as the executable, it ight be different for your system.  
   Refer to [5] for more compilation options and details. You should have recieved a Makefile along this file though.  
