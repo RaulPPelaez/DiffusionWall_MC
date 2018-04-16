@@ -1,0 +1,10 @@
+
+
+
+sim.*
+sim_proj*
+uammd
+mc
+*.so
+HydroGrid
+*~ 

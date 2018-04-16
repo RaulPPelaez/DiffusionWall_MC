@@ -1,0 +1,61 @@
+
+#This line will be ignored if loadParticles = 1
+numberofparticles    =    4096
+
+#Maximum blob-blob interaction distance
+cutoff            =    1.968
+
+
+temperature        =       0.004141946400000
+
+#Relaxation steps include autotuning of the jump sizes
+numstepsRelaxation    =    10000
+#Number of GPU MCMC steps, a step tries to move 10 particles in each cell (of size cutOff). More info about this in [1]
+numsteps         =    100000
+
+#Initial particle jump size
+initialDx        =    0.26
+
+acceptanceRatio = 0.5
+#Update HG with the current positions each samplefreq steps
+samplefreq        =    1
+#Write to disk
+savefreq          =    1000
+
+#Simulation box size, take into account that the system is confined between -lz/2 and lz/2
+lx            =    105.2382814821079
+ly            =    105.2382814821079
+lz            =    20
+
+
+!blob-blob Debye potential parameters
+blob_repulsion_strength = 0.0165677856 
+blob_radius = 0.656
+blob_debye_length = 0.0656
+
+!Intensity of the external Z potential
+gravity = 0.0869477388288
+
+!blob-wall interaction parameters
+wall_repulsion_strength = 0.482995388566091
+wall_blob_radius = 0.656
+wall_debye_length = 2.624
+
+#If cellsHydroGrid.z == 1 the z component of the particles will be ignored when performing the HG analysis
+cellsHydroGrid   =  512 512 1
+
+#If loadparticles == 0, a random configuration of numberofparticles particles inside the box will be selected
+loadParticles        =     0
+#If loadParticles==1, the initial configuration will be read from this file
+#if the file has three columns it will be interpreted as XYZ, if a fourth column is present, it will be interpreted as HG species.
+coordinates        =    init.pos
+
+
+#This will be the prefix name of all the output files
+outputname         =    sim
+
+#REFERENCES:
+#[1] https://github.com/PabloIbannez/UAMMD/blob/master/src/Integrator/MonteCarlo/MonteCarloNVT_Anderson.cuh
+#[2] https://github.com/RaulPPelaez/UAMMD
+#[3] https://github.com/stochasticHydroTools/HydroGrid
+#[4] https://github.com/RaulPPelaez/DiffusionWall_MC
