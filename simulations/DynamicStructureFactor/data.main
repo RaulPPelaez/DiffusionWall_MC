@@ -25,7 +25,7 @@ savefreq          =    1000
 #Simulation box size, take into account that the system is confined between -lz/2 and lz/2
 lx            =    105.2382814821079
 ly            =    105.2382814821079
-lz            =    20
+lz            =    8
 
 
 !blob-blob Debye potential parameters
