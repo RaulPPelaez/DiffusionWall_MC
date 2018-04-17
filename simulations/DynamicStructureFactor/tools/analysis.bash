@@ -1,9 +1,10 @@
 
 if ! which xmgrace >/dev/null 2>&1
+then
    echo "ERROR! I need xmgrace to fit functions!"
-   exit 1
+   exit  1
 fi
-   
+
 dataFolder=..
 outputname=$(grep -E '^\s*outputname' $dataFolder/data.main | awk '{print $3}')
 Lx=$(cat $dataFolder/data.main | grep "lx"  | awk '{print $3}')
