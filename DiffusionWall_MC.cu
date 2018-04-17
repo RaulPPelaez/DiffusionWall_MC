@@ -99,6 +99,7 @@ double3 boxSize;
 int numsteps;   //Total number of simulation steps
 int savefreq;   //The code will output every savefreq steps
 int numstepsRelaxation;  //The code will run these steps as thermalization steps
+int numstepsHGconfig;  //The number of steps used for determining dt
 
 bool loadParticles = false; //true will load initial configuration from "coordinates" file
 std::string coordinates;    //Name of the file with the initial configuration
@@ -329,7 +330,7 @@ int main(int argc, char *argv[]){
   par.posVar = initialDx;              //Starting particle jump
   par.thermSteps = numstepsRelaxation;       //Number of self optimization steps
   par.accRatio = acceptanceRatio;         //Desired acceptance ratio
-  par.accFactor = 1.11;       //Change in jump every optimization step
+  par.accFactor = 1.02;       //Change in jump every optimization step
   par.checkAccRate = 10;       //Check acceptance every X during thermalization
 
   //Create the MonteCarlo UAMMD integrator object.
@@ -346,12 +347,26 @@ int main(int argc, char *argv[]){
   Timer tim;
   
   ofstream out(outputName + string(".particle.pos")); //File to output particle positions
-
+  
+  //Thermalization. the first par.thermSteps calls to mc->forwardTime() will be perform as thermalization steps
+  forj(0,par.thermSteps){mc->forwardTime();}
+  
+  //Now dt for HG is estimated. Some steps are performed (numstepsHGconfig steps) and
+  //the number of accepted changes is counted. Then dt is chosen as numAcceptedSteps/numstepsHGconfig
+  
+  //Reset tries count
+  mc->getMonteCarloSteps();
+  forj(0,numstepsHGconfig){
+      //With true flag the total number of tries and the total number of accepted tries are stored.
+      mc->forwardTime(true);
+  }
+  uint2 MCtries = mc->getMonteCarloSteps();
+  
   //HydroGrid configuration
   HydroGrid::Parameters hgpar;
   hgpar.box = box;               //Simulation box
   hgpar.cellDim = cellsHydroGrid;//cells to perform HG analysis
-  hgpar.dt = 1.0;                //Time between update calls
+  hgpar.dt = (double) MCtries.y/numstepsHGconfig; //Time between update calls
   hgpar.outputName = outputName; //Name prefix of HG output
   hgpar.useColors = true;        //Interpret pos.w as species
 
@@ -360,8 +375,6 @@ int main(int argc, char *argv[]){
   //Initialize HydroGrid
   hg.init();
   
-  //Thermalization. the first par.thermSteps calls to mc->forwardTime() will be perform as thermalization steps
-  forj(0,par.thermSteps){mc->forwardTime();}
   
   tim.tic();
   
@@ -426,6 +439,7 @@ void readParameters(std::string datamain){
     if(word.compare("numberofparticles")==0)        in>>equal>>numberofparticles;
     else if(word.compare("cutoff")==0)              in>>equal>>blob_cutOff;
     else if(word.compare("temperature")==0)         in>>equal>>temperature;
+    else if(word.compare("numstepsHGconfig")==0)    in>>equal>>numstepsHGconfig;
     else if(word.compare("numstepsRelaxation")==0)  in>>equal>>numstepsRelaxation;
     else if(word.compare("cellsHydroGrid")==0)      in>>equal>>cellsHydroGrid.x>>cellsHydroGrid.y>>cellsHydroGrid.z;
     else if(word.compare("numsteps")==0)            in>>equal>>numsteps;
