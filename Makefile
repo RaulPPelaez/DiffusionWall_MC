@@ -31,7 +31,7 @@ hgMC:
 	fi
 
 
-	$(BASIC_LINE) -I$(HYDROGRID_SRC) DiffusionWall_MC.cu  -L$(HYDROGRID_SRC) -lCallHydroGrid -o mc
+	$(BASIC_LINE) -I$(HYDROGRID_SRC) DiffusionWall_MC.cu  -Xlinker="-rpath=\$$ORIGIN" -L$(HYDROGRID_SRC)   -lCallHydroGrid -o mc
 	cp $(HYDROGRID_SRC)/libCallHydroGrid.so .	
 
 clean:
