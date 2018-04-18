@@ -366,7 +366,7 @@ int main(int argc, char *argv[]){
   HydroGrid::Parameters hgpar;
   hgpar.box = box;               //Simulation box
   hgpar.cellDim = cellsHydroGrid;//cells to perform HG analysis
-  hgpar.dt = (double) MCtries.y/numstepsHGconfig; //Time between update calls
+  hgpar.dt = (double) ((MCtries.y/numstepsHGconfig)/numberofparticles); //Time between update calls
   hgpar.outputName = outputName; //Name prefix of HG output
   hgpar.useColors = true;        //Interpret pos.w as species
 
