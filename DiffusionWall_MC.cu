@@ -439,8 +439,8 @@ void readParameters(std::string datamain){
     if(word.compare("numberofparticles")==0)        in>>equal>>numberofparticles;
     else if(word.compare("cutoff")==0)              in>>equal>>blob_cutOff;
     else if(word.compare("temperature")==0)         in>>equal>>temperature;
-    else if(word.compare("numstepsHGconfig")==0)    in>>equal>>numstepsHGconfig;
     else if(word.compare("numstepsRelaxation")==0)  in>>equal>>numstepsRelaxation;
+    else if(word.compare("numstepsHGconfig")==0)    in>>equal>>numstepsHGconfig;
     else if(word.compare("cellsHydroGrid")==0)      in>>equal>>cellsHydroGrid.x>>cellsHydroGrid.y>>cellsHydroGrid.z;
     else if(word.compare("numsteps")==0)            in>>equal>>numsteps;
     else if(word.compare("initialDx")==0)           in>>equal>>initialDx;

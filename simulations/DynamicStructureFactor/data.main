@@ -10,6 +10,8 @@ temperature        =       0.004141946400000
 
 #Relaxation steps include autotuning of the jump sizes
 numstepsRelaxation    =    10000
+#Number of steps which are used to determine dt
+numstepsHGconfig = 4000
 #Number of GPU MCMC steps, a step tries to move 10 particles in each cell (of size cutOff). More info about this in [1]
 numsteps         =    100000
 
