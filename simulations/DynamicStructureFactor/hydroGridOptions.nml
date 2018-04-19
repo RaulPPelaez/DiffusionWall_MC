@@ -36,10 +36,10 @@
    nWavenumbers=-1 ! Negative value means specify a range of wavenumbers, zero to turn off S(k,w)
    ! Specify range of wavenumbers to output, here index kx=2:4, ky=2:4
    selectedWavenumbers="-32 32, 0 32"
-   nSavedSnapshots=5000 ! How many snapshots to compute time-correlation functions for
+   nSavedSnapshots=100 ! How many snapshots to compute time-correlation functions for
    
    outputFolder = "./"
-   filePrefix = "sim" ! Prefix for all file names
+   filePrefix = "sim2" ! Prefix for all file names
    axisToPrint = 2 ! 1=x, 2=y, 3=z axis
    periodic = T ! Is the system periodic along the y axes
 /
@@ -72,10 +72,10 @@
    writeDynamicFiles=-1 ! 1 to write S(k,w), 0 to write individual k's, -1 for one big file
    nWavenumbers=0 ! Negative value means specify a range of wavenumbers, zero to turn off S(k,w)
    selectedWavenumbers="1 64, 0 0" ! Compute S(k,w) for kx=1:4
-   nSavedSnapshots=1000
+   nSavedSnapshots=100
    
    outputFolder = "./"
-   filePrefix = "sim_proj" ! Prefix for all file names
+   filePrefix = "sim2_proj" ! Prefix for all file names
    axisToPrint = 1 ! 1=x, 2=y, 3=z axis
    periodic = T ! Is the system periodic along the y axes
 /

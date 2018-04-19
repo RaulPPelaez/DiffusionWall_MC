@@ -4,7 +4,6 @@
 #It expects to find a data.main, hydroGridOptions.nml, uammd.log and the results of the simulation in the .. folder.
 #It needs xmgrace to run
 
-
 dataFolder=..
 #Check requirements
 if ! ls $dataFolder/data.main >/dev/null 2>&1
@@ -243,15 +242,19 @@ echo "Compute height probability distribution"
 #Compute height probability distribution
 if ls $dataFolder/$outputname.particle.pos >/dev/null 2>&1
 then
-    ini=0
-    end=$(echo $lx | awk '{print $1/10}')
+    lx=$(grep '^lz' $dataFolder/data.main | awk '{print $3}')
+    ini=$(echo $lx | awk '{print -$1/2}')
+    end=$(echo $lx | awk '{print $1/2}')
+
     nbins=100
-    awk '{if(NF>1) print $3}' $dataFolder/$outputname.particle.pos |
-	awk '{print int(($1-'$ini')/'$end'*'$nbins')}' |
+    grep -v "#"  $dataFolder/$outputname.particle.pos |	
+	awk '{print $3}' |
+	awk '{print int(($1-('$ini'))/('$end'-('$ini'))*'$nbins')}' |
 	sort -g -k1 |
 	uniq -c |
-	awk '{print $2, ($1/'$nbins'.0)*('$end'+'$ini')-'$ini'}' |
+	awk '{print ($2/'$nbins'.0)*(('$end')-('$ini'))+('$ini'), $1}' |
 	sort -g -k1 > kk
+    
     sum=$(cat kk | datamash -W sum 2)
 
     awk '{print $1, $2/'$sum'}' kk > $outputname.heightProbabilityDistribution.dat;

@@ -20,7 +20,7 @@ BASIC_LINE= nvcc -O3 $(DOUBLE_PRECISION) -I  $(UAMMD_SRC) -I $(UAMMD_SRC)/third_
 all: hgMC
 
 hgMC:
-	@if ! ls -d $(HYDROGRID_SRC) >/dev/null 2>&1; \
+	@if ! ls $(HYDROGRID_SRC)/libCallHydroGrid.so >/dev/null 2>&1; \
 	then \
 	echo "ERROR: Could not find Hydrogrid!, please compile it and tell me where it is in the Makefile!"; exit 1; \
 	fi
