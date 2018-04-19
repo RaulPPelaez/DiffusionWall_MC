@@ -352,7 +352,7 @@ int main(int argc, char *argv[]){
   forj(0,par.thermSteps){mc->forwardTime();}
   
   //Now dt for HG is estimated. Some steps are performed (numstepsHGconfig steps) and
-  //the number of accepted changes is counted. Then dt is chosen as numAcceptedSteps/numstepsHGconfig
+  //the number of accepted changes is counted. Then dt is chosen as (numAcceptedSteps/numstepsHGconfig)/numParticles
   
   //Reset tries count
   mc->getMonteCarloSteps();

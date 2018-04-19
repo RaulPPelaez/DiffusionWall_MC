@@ -14,7 +14,7 @@ numstepsRelaxation    =    10000
 numstepsHGconfig = 4000
 
 #Number of GPU MCMC steps, a step tries to move 10 particles in each cell (of size cutOff). More info about this in [1]
-numsteps         =    500
+numsteps         =    100000
 
 #Initial particle jump size
 initialDx        =    0.26
@@ -23,7 +23,7 @@ acceptanceRatio = 0.5
 #Update HG with the current positions each samplefreq steps
 samplefreq        =    1
 #Write to disk
-savefreq          =    100
+savefreq          =    5000
 
 #Simulation box size, take into account that the system is confined between -lz/2 and lz/2
 lx            =    105.2382814821079
@@ -55,7 +55,7 @@ coordinates        =    init.pos
 
 
 #This will be the prefix name of all the output files
-outputname         =    sim2
+outputname         =    sim
 
 #REFERENCES:
 #[1] https://github.com/PabloIbannez/UAMMD/blob/master/src/Integrator/MonteCarlo/MonteCarloNVT_Anderson.cuh
