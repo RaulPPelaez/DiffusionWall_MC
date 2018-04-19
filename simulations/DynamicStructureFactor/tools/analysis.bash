@@ -168,8 +168,7 @@ do
     iter=0
     endT=$(tail -1 $i | awk '{print $1}')
     
-    maxTime=$(awk 'BEGIN{t=0} $2<=('$initialA'/50){t=$1; print t; exit} END{ if(t==0){ t='$endT'; print t}}' $i)
-
+    maxTime=$(awk 'BEGIN{t=0} $2<=('$initialA'/100){t=$1*4; print t; exit} END{ if(t==0){ t='$endT'; print t}}' $i)
 
     
     tail -n+2 $i | awk '$1<='$maxTime'' > fitfile
@@ -179,7 +178,7 @@ do
     do
 	let iter++
 
-	if [ $iter -gt 10 ]
+	if [ $iter -gt 15 ]
 	then
 	    minCorrelation=0.89
 	    tail -n+2 $i | awk '$1<='$maxTime'' | awk 'NR<='$size'/2' > fitfile
