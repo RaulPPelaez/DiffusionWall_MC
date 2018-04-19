@@ -1,3 +1,110 @@
+#!/bin/bash
+#This script will analyse results output by mc. It will average and fit the dynamic structure factors to exponentials and store the relaxation times for each wave number. Also it wil lcompute rdf (if possible) and height probability distribution.
+
+#It expects to find a data.main, hydroGridOptions.nml, uammd.log and the results of the simulation in the .. folder.
+#It needs xmgrace to run
+
+
+dataFolder=..
+#Check requirements
+if ! ls $dataFolder/data.main >/dev/null 2>&1
+then
+    echo "Could not find data.main! Be sure to put the simulation in the $dataFolder folder"
+exit 1
+fi
+if ! ls $dataFolder/hydro*.nml >/dev/null 2>&1
+then
+    echo "Could not find hydroGridOptions.nml! Be sure to put the simulation in the $dataFolder folder"
+exit 1
+fi
+if ! ls $dataFolder/uammd.log >/dev/null 2>&1
+then
+    echo "Could not find uammd.log! Be sure to put the simulation in the $dataFolder folder"
+exit 1
+fi
+
+#Check datamash version
+useDatamash=false
+if which datamash >/dev/null 2>&1
+then
+    useDatamash=true
+    version=$(datamash --version | head -1 | awk '{print $4}' | sed 's+\.++g')
+    if [ $version -lt 110 ]
+    then
+	echo "I need datamash version >= 1.1.0!"
+	echo "I wont use datamash"
+	useDatamash=false
+    fi
+
+fi
+
+if ! which xmgrace >/dev/null 2>&1
+then
+    echo "I need xmgrace to fit curves!, please install it"
+    exit 1
+fi
+
+#Averages a stream of lines, grouping them by the value of the first column.
+#Takes two arguments, the first and last column to average
+#This function is equivalent to datamash -W --sort groupby 1 mean $1-$2 sstdev $1-$2
+function average_files(){
+    if [ $# -eq 1 ]
+    then
+	startCol=$1
+	endCol=$startCol
+    else
+	startCol=$1
+	endCol=$2
+    fi
+    if $useDatamash
+    then
+	if [ $# -eq 1 ]
+	then
+	    cols=$(echo "$startCol")
+	else
+	    cols=$(echo "$startCol-$endCol")
+	fi
+	cat /dev/stdin | datamash -W --sort groupby 1 mean $cols sstdev $cols
+    else
+	
+	command=$(echo 'BEGIN{
+        $ini='$startCol'-1;
+        $end='$endCol'-1;
+        }
+        {
+        $counter{$F[0]}++;
+        $n=$counter{$F[0]};
+        for $i ($ini..$end){
+           $delta= $F[$i] - $mean{$F[0]}[$i];
+           $mean{$F[0]}[$i] += $delta/$n;
+           $delta2= $F[$i] - $mean{$F[0]}[$i];
+           $M2{$F[0]}[$i] += $delta*$delta2
+        }
+        }
+        END{
+        foreach $val (keys %mean){
+           printf "$val ";
+           for $j ($ini..$end){
+             printf "%e ",$mean{$val}[$j];
+           }
+           for $j ($ini..$end){
+             if($counter{$val}<=1){
+               printf "nan ";
+             }
+             else{
+               printf "%e ",sqrt($M2{$val}[$j]/($counter{$val}-1));
+             }
+           }
+
+           printf"\n"}
+        }')
+
+	command=$(echo $command | tr '\n' ' ');
+
+	cat /dev/stdin | perl -lane  "$command"
+    fi
+}
+
 
 if ! which xmgrace >/dev/null 2>&1
 then
@@ -5,7 +112,7 @@ then
    exit  1
 fi
 
-dataFolder=..
+
 outputname=$(grep -E '^\s*outputname' $dataFolder/data.main | awk '{print $3}')
 Lx=$(cat $dataFolder/data.main | grep "lx"  | awk '{print $3}')
 Ly=$(cat $dataFolder/data.main | grep "ly"  | awk '{print $3}')
@@ -30,14 +137,15 @@ then
     echo "Averaging S(k,w) time windows"
     #Average all S(k,w) files (they should be identical)
     ls $dataFolder/$outputname.*.S_k_t.pair=1.dat --hide "*.00000000.*" |
-	xargs interleave |
-	datamash -W groupby 1 mean 2-$ncolumns sstdev 2-$ncolumns |
+	xargs cat |
+	#datamash -W --sort groupby 1 mean 2-$ncolumns sstdev 2-$ncolumns |
+	average_files 2 $ncolumns |
 	sort -g -k1 > $meanFile
 fi    
 
-tmpDir=tmp #$(mktemp -d)
+tmpDir=$(mktemp -d)
 
-mkdir -p tmp
+#mkdir -p tmp
 
 echo "Splitting S(k,w) file"
 awk '{for(i=2;i<='$ncolumns';i++) print $1, $i >> "'$tmpDir'/" sprintf("%d", i)}' $meanFile
@@ -105,22 +213,22 @@ do
 
     echo $kmod $(echo $Gamma | awk '{print 1.0/$1}') >> tauvsk.dat
 
-#    rm $i
+    rm $i
 done
 cd -
 
 #Average tau results for each kmod
 cat $tmpDir/tauvsk.dat |
-    sort -g -k1 |
-    datamash -W groupby 1 mean 2 sstdev 2 > tauvsk.dat
+    #    datamash -W groupby 1 mean 2 sstdev 2 > tauvsk.dat
+    average_files 2 | sort -g -k1 > tauvsk.dat
 
-# rm -rf $tmpDir
+rm -rf $tmpDir
 
-echo "Compute rdf"
+
 #Compute rdf
 if which rdf >/dev/null 2>&1 && ls $dataFolder/$outputname.particle.pos >/dev/null 2>&1
 then
-    
+    echo "Compute rdf"
     N=$(tail -n+2 $dataFolder/$outputname.particle.pos | awk 'substr($1,0,1)=="#"{print NR-1; exit}')
     Nsnapshots=$(grep -c '#' $dataFolder/$outputname.particle.pos)
     lx=$(grep '^lx' $dataFolder/data.main | awk '{print $3}')
