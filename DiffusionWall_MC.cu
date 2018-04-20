@@ -321,7 +321,7 @@ int main(int argc, char *argv[]){
   auto wall = make_shared<Wall>(g, zwall_bottom, zwall_top, wallRep);
   
   //Monte Carlo parameters
-  using MC = MC_NVT<DebyePot,Wall>;
+  using MC_NVT = MC_NVT<DebyePot,Wall>;
   MC::Parameters par;
   par.box = box;         //Simulation box
   par.kT = temperature;  //temperature
@@ -334,7 +334,7 @@ int main(int argc, char *argv[]){
   par.checkAccRate = 10;       //Check acceptance every X during thermalization
 
   //Create the MonteCarlo UAMMD integrator object.
-  auto mc = make_shared<MC>(pd, pg, sys, pot, wall, par);
+  auto mc = make_shared<MC_NVT>(pd, pg, sys, pot, wall, par);
       
 
    
@@ -347,9 +347,17 @@ int main(int argc, char *argv[]){
   Timer tim;
   
   ofstream out(outputName + string(".particle.pos")); //File to output particle positions
+  ofstream outTherm(outputName + string(".thermalization")); //File to output particle positions
   
   //Thermalization. the first par.thermSteps calls to mc->forwardTime() will be perform as thermalization steps
-  forj(0,par.thermSteps){mc->forwardTime();}
+  forj(0,par.thermSteps){
+      mc->forwardTime();
+      
+      if(j%par.checkAccRate==0 && j > 0){
+	double2 acc = mc->getAccRate();
+	outTherm << j << " " << mc->computeInternalEnergy() << " " << mc->computeExternalEnergy() << " " << acc.x << " " << acc.y << endl;
+      }
+  }
   
   //Now dt for HG is estimated. Some steps are performed (numstepsHGconfig steps) and
   //the number of accepted changes is counted. Then dt is chosen as (numAcceptedSteps/numstepsHGconfig)/numParticles
