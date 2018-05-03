@@ -268,9 +268,10 @@ int main(int argc, char *argv[]){
       fori(0, numberofparticles){
 	in>>pos.raw()[i].x>>pos.raw()[i].y>>pos.raw()[i].z;
 	//Type of particle is stored in .w
-	pos.raw()[i].w = 0;
+	int c = 0;
 	if(useColors)
-	  in>>pos.raw()[i].w;
+	  in>>c;
+	pos.raw()[i].w = c;
       }
       if(useColors)
 	sys->log<System::MESSAGE>("Using fourth column of %s as species", coordinates.c_str());
@@ -338,17 +339,15 @@ int main(int argc, char *argv[]){
       
 
    
-  //You can issue a logging event like this, a wide variety of log levels exists (see System.cuh).
-  //A maximum log level is set in System.cuh, every logging event with a level superior to the max will result in
-  // absolutely no overhead, so dont be afraid to write System::DEBUGX log calls.
-  sys->log<System::MESSAGE>("RUNNING!!!");
-
   //This can measure time
   Timer tim;
   
   ofstream out(outputName + string(".particle.pos")); //File to output particle positions
   ofstream outTherm(outputName + string(".thermalization")); //File to output particle positions
-  
+  //You can issue a logging event like this, a wide variety of log levels exists (see System.cuh).
+  //A maximum log level is set in System.cuh, every logging event with a level superior to the max will result in
+  // absolutely no overhead, so dont be afraid to write System::DEBUGX log calls.
+  sys->log<System::MESSAGE>("Running thermalization");
   //Thermalization. the first par.thermSteps calls to mc->forwardTime() will be perform as thermalization steps
   forj(0,par.thermSteps){
       mc->forwardTime();
@@ -360,8 +359,8 @@ int main(int argc, char *argv[]){
   }
   
   //Now dt for HG is estimated. Some steps are performed (numstepsHGconfig steps) and
-  //the number of accepted changes is counted. Then dt is chosen as (numAcceptedSteps/numstepsHGconfig)/numParticles
-  
+  //the number of accepted changes is counted. Then dt is chosen as numAcceptedSteps/numstepsHGconfig
+  sys->log<System::MESSAGE>("Estimating dt...");
   //Reset tries count
   mc->getMonteCarloSteps();
   forj(0,numstepsHGconfig){
@@ -369,12 +368,16 @@ int main(int argc, char *argv[]){
       mc->forwardTime(true);
   }
   uint2 MCtries = mc->getMonteCarloSteps();
-  
+
+  real dtHG = ((double) (MCtries.y/numstepsHGconfig))/numberofparticles;
+
+  sys->log<System::MESSAGE>("Initializing HydroGrid");
+  sys->log<System::MESSAGE>("HydroGrid time step: %e", dtHG);
   //HydroGrid configuration
   HydroGrid::Parameters hgpar;
   hgpar.box = box;               //Simulation box
   hgpar.cellDim = cellsHydroGrid;//cells to perform HG analysis
-  hgpar.dt = ((double) (MCtries.y/numstepsHGconfig))/numberofparticles; //Time between update calls
+  hgpar.dt = dtHG; //Time between update calls
   hgpar.outputName = outputName; //Name prefix of HG output
   hgpar.useColors = true;        //Interpret pos.w as species
 
@@ -385,7 +388,8 @@ int main(int argc, char *argv[]){
   
   
   tim.tic();
-  
+
+  sys->log<System::MESSAGE>("Running simulation");
   //Reset tries count
   mc->getMonteCarloSteps();
   //Run the simulation
