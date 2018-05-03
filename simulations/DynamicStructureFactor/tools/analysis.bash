@@ -27,8 +27,8 @@ useDatamash=false
 if which datamash >/dev/null 2>&1
 then
     useDatamash=true
-    version=$(datamash --version | head -1 | awk '{print $4}' | sed 's+\.++g')
-    if [ $version -lt 110 ]
+    version=$(datamash --version | head -1 | awk '{print $4}' | cut -d'.' -f1-2 | sed 's+\.++g')
+    if [ $version -lt 11 ]
     then
 	echo "I need datamash version >= 1.1.0!"
 	echo "I wont use datamash"
@@ -254,7 +254,7 @@ then
 	awk '{print ($2/'$nbins'.0)*(('$end')-('$ini'))+('$ini'), $1}' |
 	sort -g -k1 > kk
     
-    sum=$(cat kk | datamash -W sum 2)
+    sum=$(cat kk | awk '{s+=$2}END{print s}')
 
     awk '{print $1, $2/'$sum'}' kk > $outputname.heightProbabilityDistribution.dat;
     rm kk
