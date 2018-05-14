@@ -265,13 +265,18 @@ int main(int argc, char *argv[]){
       }
       useColors = ncolumns==4;
       ifstream in(coordinates);
+      real4 * pos_ptr = pos.raw();
       fori(0, numberofparticles){
-	in>>pos.raw()[i].x>>pos.raw()[i].y>>pos.raw()[i].z;
+	in>>pos_ptr[i].x>>pos_ptr[i].y>>pos_ptr[i].z;
+	pos_ptr[i].x -= boxSize.x*0.5;
+	pos_ptr[i].y -= boxSize.y*0.5;
+	pos_ptr[i].z -= boxSize.z*0.5;
+	
 	//Type of particle is stored in .w
-	int c = 0;
+	float c = 0;
 	if(useColors)
 	  in>>c;
-	pos.raw()[i].w = c;
+	pos.raw()[i].w = int(c);
       }
       if(useColors)
 	sys->log<System::MESSAGE>("Using fourth column of %s as species", coordinates.c_str());
@@ -286,7 +291,7 @@ int main(int argc, char *argv[]){
       fori(0, numberofparticles){
 	pos.raw()[i] = make_real4(boxSize*sys->rng().uniform3(-0.5, 0.5) , 0.0);
 	pos.raw()[i].z = sys->rng().uniform(zwall_bottom, zwall_top);
-	pos.raw()[i].w = sys->rng().next32()%2;
+	pos.raw()[i].w = 0;//sys->rng().next32()%2;
       }
     }
   }
