@@ -253,25 +253,20 @@ int main(int argc, char *argv[]){
       //Count columns
       int ncolumns = -1;
       {
-	ifstream in(coordinates);
-			
+	ifstream in(coordinates);			
 	string line;
 	getline(in, line);
 	getline(in, line);
 	istringstream iss(line);
 	ncolumns = (vector<string>{istream_iterator<string>{iss},
-	      istream_iterator<string>{}}).size();
-
+	      istream_iterator<string>{}}).size();	
       }
       useColors = ncolumns==4;
       ifstream in(coordinates);
+      in>>numberofparticles;
       real4 * pos_ptr = pos.raw();
       fori(0, numberofparticles){
 	in>>pos_ptr[i].x>>pos_ptr[i].y>>pos_ptr[i].z;
-	pos_ptr[i].x -= boxSize.x*0.5;
-	pos_ptr[i].y -= boxSize.y*0.5;
-	pos_ptr[i].z -= boxSize.z*0.5;
-	
 	//Type of particle is stored in .w
 	float c = 0;
 	if(useColors)
@@ -282,8 +277,6 @@ int main(int argc, char *argv[]){
 	sys->log<System::MESSAGE>("Using fourth column of %s as species", coordinates.c_str());
       else
 	sys->log<System::MESSAGE>("No species column detected in %s", coordinates.c_str());
-	    
-
     }
     //Start randomly between the two walls
     else{
