@@ -1,7 +1,8 @@
 
 #WARNING: You should probably change the compute architecture for your GPU in BASIC_LINE or here in ARCH
+#If not set, the Makefile will compile for the currently available GPUs in the system
 #The target CUDA compute capability	
-ARCH=52
+ARCH=
 
 #Change for your system, HG needs to be already compiled
 HYDROGRID_SRC=HydroGrid/src/
@@ -12,10 +13,17 @@ HYDROGRID_SRC=HydroGrid/src/
 
 UAMMD_SRC=uammd/src
 
-CPU= -O3 -funroll-loops -ffinite-math-only -fno-signaling-nans -fno-math-errno -fno-signed-zeros -frename-registers -march=native -fPIC
+ifeq ($(ARCH),)
+GENCODE_FLAGS:=$(shell printf '\#include<cstdio>\n int main(){int nD;cudaGetDeviceCount(&nD);for(int i=0;i<nD;i++){cudaDeviceProp dp;cudaGetDeviceProperties(&dp, i);int cp=dp.major*10+dp.minor;std::printf("%%d\\n",cp);} return 0;}' | nvcc -Wno-deprecated-gpu-targets -x cu - --run | sort -g -k1 | uniq | awk '{print "-gencode arch=compute_"$$1",code=sm_"$$1}')
+else
+GENCODE_FLAGS=-gencode arch=compute_$(ARCH),code=sm_$(ARCH)
+endif
+
+
+CPU= -O3 -g -funroll-loops -ffinite-math-only -fno-signaling-nans -fno-math-errno -fno-signed-zeros -frename-registers -march=native -fPIC
 
 CXX=g++
-BASIC_LINE= nvcc -O3 $(DOUBLE_PRECISION) -I  $(UAMMD_SRC) -I $(UAMMD_SRC)/third_party -ccbin="$(CXX)" -Xcompiler="$(CPU)" -gencode arch=compute_$(ARCH),code=sm_$(ARCH) -x cu -std=c++11 --expt-relaxed-constexpr
+BASIC_LINE= nvcc -g -O3 $(DOUBLE_PRECISION) -I  $(UAMMD_SRC) -I $(UAMMD_SRC)/third_party -ccbin="$(CXX)" -Xcompiler="$(CPU)" $(GENCODE_FLAGS) -x cu -std=c++11 --expt-relaxed-constexpr
 
 all: hgMC
 
@@ -27,7 +35,7 @@ hgMC:
 
 	@if ! ls -d uammd >/dev/null 2>&1; \
 	then \
-	git clone https://github.com/pabloibannez/uammd; \
+	git clone --depth=1 https://github.com/pabloibannez/uammd; \
 	fi
 
 
